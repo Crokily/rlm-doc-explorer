@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRlmQueryContext } from "../hooks/useRlmQuery";
+import MetricsPanel from "./MetricsPanel";
 
 interface QueryInterfaceProps {
   documentId: string | null;
@@ -64,20 +65,6 @@ export default function QueryInterface({ documentId }: QueryInterfaceProps) {
     submitQuery(documentId, trimmedQuestion);
     setQuestion("");
   };
-
-  const metricChips = useMemo(() => {
-    if (!result) {
-      return [];
-    }
-
-    return [
-      `${result.metrics.tokens.toLocaleString()} tokens`,
-      `${result.metrics.time_s.toFixed(2)}s`,
-      `${result.metrics.iterations} iterations`,
-      `depth ${result.metrics.depth}`,
-      `${result.metrics.sub_llm_calls} sub-LLM calls`,
-    ];
-  }, [result]);
 
   return (
     <section className="mx-auto flex h-full w-full max-w-5xl flex-col gap-4">
@@ -151,20 +138,10 @@ export default function QueryInterface({ documentId }: QueryInterfaceProps) {
           <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-zinc-100">
             {result.answer}
           </p>
-          {metricChips.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {metricChips.map((chip) => (
-                <span
-                  key={chip}
-                  className="rounded-full border border-zinc-700 bg-zinc-900 px-2.5 py-1 text-xs text-zinc-400"
-                >
-                  {chip}
-                </span>
-              ))}
-            </div>
-          )}
         </article>
       )}
+
+      <MetricsPanel />
 
       {history.length > 0 && (
         <section className="space-y-3">
