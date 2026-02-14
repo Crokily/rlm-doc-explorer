@@ -5,10 +5,11 @@ from pathlib import Path
 import docx
 import pypdf
 from dotenv import load_dotenv
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from rlm_pipeline import query_document
+from ws_handler import handle_query_ws
 
 # Load environment variables from the project root (.env one level above /backend).
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
@@ -151,3 +152,8 @@ def query_document_endpoint(request: QueryRequest) -> dict:
         return query_document(str(document.get("text", "")), request.question)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Query failed: {exc}") from exc
+
+
+@app.websocket("/ws/query")
+async def ws_query(websocket: WebSocket) -> None:
+    await handle_query_ws(websocket, documents)
