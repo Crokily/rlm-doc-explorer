@@ -52,6 +52,7 @@ export interface UseRlmQueryValue {
   result: RlmResult | null;
   error: string | null;
   resetQuery: () => void;
+  statusMessage: string;
 }
 
 export const RlmQueryContext = createContext<UseRlmQueryValue | null>(null);
@@ -133,6 +134,7 @@ export function useRlmQuery(): UseRlmQueryValue {
   const [iterations, setIterations] = useState<RlmIteration[]>([]);
   const [result, setResult] = useState<RlmResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState("Idle");
 
   const closeSocket = useCallback(() => {
     const socket = socketRef.current;
@@ -160,6 +162,7 @@ export function useRlmQuery(): UseRlmQueryValue {
     setIterations([]);
     setResult(null);
     setError(null);
+    setStatusMessage("Idle");
   }, [closeSocket]);
 
   const submitQuery = useCallback(
@@ -167,6 +170,7 @@ export function useRlmQuery(): UseRlmQueryValue {
       const trimmedQuestion = question.trim();
       if (!documentId || trimmedQuestion.length === 0) {
         setError("Please select a document and enter a question.");
+        setStatusMessage("Waiting for a valid question.");
         return;
       }
 
@@ -175,6 +179,7 @@ export function useRlmQuery(): UseRlmQueryValue {
       setIterations([]);
       setResult(null);
       setError(null);
+      setStatusMessage("Connecting to RLM...");
 
       const socket = new WebSocket(RLM_QUERY_WS_URL);
       socketRef.current = socket;
@@ -206,6 +211,8 @@ export function useRlmQuery(): UseRlmQueryValue {
           return;
         }
 
+        setStatusMessage("Connected. Sending query...");
+
         try {
           socket.send(
             JSON.stringify({
@@ -213,8 +220,10 @@ export function useRlmQuery(): UseRlmQueryValue {
               question: trimmedQuestion,
             }),
           );
+          setStatusMessage("RLM is processing your query...");
         } catch {
           setError("Failed to send query to the RLM service.");
+          setStatusMessage("Failed to send query.");
           finishQuery();
         }
       };
@@ -230,28 +239,34 @@ export function useRlmQuery(): UseRlmQueryValue {
             typeof event.data === "string" ? JSON.parse(event.data) : event.data;
         } catch {
           setError("Received malformed data from the RLM service.");
+          setStatusMessage("Received malformed stream data.");
           finishQuery();
           return;
         }
 
         if (!isRlmWsEvent(payload)) {
           setError("Received unexpected event payload from the RLM service.");
+          setStatusMessage("Received unexpected stream event.");
           finishQuery();
           return;
         }
 
         switch (payload.type) {
           case "status":
+            setStatusMessage(payload.data.message);
             break;
           case "iteration":
             setIterations((current) => [...current, payload.data]);
+            setStatusMessage(`Iteration ${payload.data.iteration} streamed.`);
             break;
           case "result":
             setResult(payload.data);
+            setStatusMessage("RLM process completed.");
             finishQuery();
             break;
           case "error":
             setError(payload.data.message);
+            setStatusMessage("RLM reported an error.");
             finishQuery();
             break;
         }
@@ -263,6 +278,7 @@ export function useRlmQuery(): UseRlmQueryValue {
         }
 
         setError("Unable to connect to the RLM query stream.");
+        setStatusMessage("Unable to connect to RLM.");
         finishQuery();
       };
 
@@ -277,6 +293,11 @@ export function useRlmQuery(): UseRlmQueryValue {
           hasTerminalEvent = true;
           setIsLoading(false);
           setError((current) => current ?? "Query connection closed unexpectedly.");
+          setStatusMessage((current) =>
+            current === "RLM process completed."
+              ? current
+              : "Query connection closed unexpectedly.",
+          );
         }
       };
     },
@@ -296,6 +317,7 @@ export function useRlmQuery(): UseRlmQueryValue {
     result,
     error,
     resetQuery,
+    statusMessage,
   };
 }
 

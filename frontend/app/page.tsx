@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import DocumentUpload from "./components/DocumentUpload";
+import IterationSidebar from "./components/IterationSidebar";
 import QueryInterface from "./components/QueryInterface";
 import { RlmQueryContext, useRlmQuery } from "./hooks/useRlmQuery";
 
@@ -21,17 +22,19 @@ export default function Home() {
         </p>
       </header>
 
-      <div className="flex min-h-[calc(100vh-81px)] flex-col lg:flex-row">
-        <aside className="w-full border-b border-zinc-800 p-4 lg:min-h-[calc(100vh-81px)] lg:w-96 lg:border-b-0 lg:border-r">
-          <DocumentUpload onDocumentSelect={setSelectedDocId} />
-        </aside>
+      <RlmQueryContext.Provider value={rlmQuery}>
+        <div className="flex min-h-[calc(100vh-81px)] flex-col lg:flex-row">
+          <aside className="w-full border-b border-zinc-800 p-4 lg:min-h-[calc(100vh-81px)] lg:w-96 lg:border-b-0 lg:border-r">
+            <DocumentUpload onDocumentSelect={setSelectedDocId} />
+          </aside>
 
-        <main className="flex-1 p-6">
-          <RlmQueryContext.Provider value={rlmQuery}>
+          <main className="flex-1 p-6">
             <QueryInterface documentId={normalizedDocId} />
-          </RlmQueryContext.Provider>
-        </main>
-      </div>
+          </main>
+
+          <IterationSidebar />
+        </div>
+      </RlmQueryContext.Provider>
     </div>
   );
 }
