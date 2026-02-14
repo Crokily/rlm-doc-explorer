@@ -112,8 +112,8 @@
         "Frontend build passes"
       ],
       "priority": 6,
-      "passes": false,
-      "notes": "Connect to WebSocket /ws/query on submit. Store answer from 'result' event. Store history in React state."
+      "passes": true,
+      "notes": "QueryInterface component + useRlmQuery hook. WebSocket connection, loading states, query history."
     },
     {
       "id": "US-007",

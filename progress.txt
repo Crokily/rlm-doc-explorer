@@ -64,3 +64,14 @@
   - onDocumentSelect callback pattern for cross-component communication
   - All styling via Tailwind, dark zinc theme
 ---
+
+## 2026-02-14 02:08 - US-006: Frontend query interface and answer display
+- Created frontend/app/hooks/useRlmQuery.ts custom hook for WebSocket communication
+- Created frontend/app/components/QueryInterface.tsx with question input, answer display, query history
+- Updated page.tsx to integrate QueryInterface in main area
+- **Learnings for future iterations:**
+  - useRlmQuery exposes: submitQuery, isLoading, iterations, result, error, resetQuery
+  - Iterations and result types defined in hooks/useRlmQuery.ts
+  - Page passes selectedDocId + hook state to components
+  - WebSocket opens per-query, closes when result received
+---
