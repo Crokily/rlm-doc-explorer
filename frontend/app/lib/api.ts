@@ -1,7 +1,13 @@
+const rawApiBase = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
+const normalizedApiBase = rawApiBase
+  ? rawApiBase.replace(/\/+$/, "")
+  : null;
+
 const API_BASE =
-  typeof window !== "undefined"
+  normalizedApiBase ??
+  (typeof window !== "undefined"
     ? `${window.location.protocol}//${window.location.hostname}:8000`
-    : "http://localhost:8000";
+    : "http://localhost:8000");
 
 export interface DocumentInfo {
   id: string;

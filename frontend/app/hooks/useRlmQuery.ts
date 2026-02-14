@@ -9,8 +9,34 @@ import {
   useState,
 } from "react";
 
+function deriveWsUrlFromApiBase(apiBase: string): string | null {
+  try {
+    const parsed = new URL(apiBase);
+    const wsProtocol = parsed.protocol === "https:" ? "wss:" : "ws:";
+    return `${wsProtocol}//${parsed.host}/ws/query`;
+  } catch {
+    return null;
+  }
+}
+
 function getRlmWsUrl(): string {
-  if (typeof window === "undefined") return "ws://localhost:8000/ws/query";
+  const explicitWsUrl = process.env.NEXT_PUBLIC_WS_URL?.trim();
+  if (explicitWsUrl) {
+    return explicitWsUrl;
+  }
+
+  const configuredApiBase = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
+  if (configuredApiBase) {
+    const derivedWsUrl = deriveWsUrlFromApiBase(configuredApiBase);
+    if (derivedWsUrl) {
+      return derivedWsUrl;
+    }
+  }
+
+  if (typeof window === "undefined") {
+    return "ws://localhost:8000/ws/query";
+  }
+
   const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
   return `${proto}//${window.location.hostname}:8000/ws/query`;
 }
