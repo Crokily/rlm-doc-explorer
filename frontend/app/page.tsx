@@ -2,9 +2,15 @@
 
 import { useState } from "react";
 import DocumentUpload from "./components/DocumentUpload";
+import QueryInterface from "./components/QueryInterface";
+import { RlmQueryContext, useRlmQuery } from "./hooks/useRlmQuery";
 
 export default function Home() {
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
+  const rlmQuery = useRlmQuery();
+
+  const normalizedDocId =
+    selectedDocId && selectedDocId.length > 0 ? selectedDocId : null;
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -21,17 +27,9 @@ export default function Home() {
         </aside>
 
         <main className="flex-1 p-6">
-          {selectedDocId ? (
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-6">
-              <p className="text-zinc-300">
-                Document selected. Query interface coming soon...
-              </p>
-            </div>
-          ) : (
-            <div className="flex h-full min-h-[280px] items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900/30 text-zinc-500">
-              <p>Upload and select a document to get started</p>
-            </div>
-          )}
+          <RlmQueryContext.Provider value={rlmQuery}>
+            <QueryInterface documentId={normalizedDocId} />
+          </RlmQueryContext.Provider>
         </main>
       </div>
     </div>
