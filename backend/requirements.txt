@@ -1,0 +1,8 @@
+dspy-ai
+fastapi
+uvicorn[standard]
+python-multipart
+pypdf
+python-docx
+websockets
+python-dotenv
