@@ -76,8 +76,8 @@
         "Backend syntax check passes"
       ],
       "priority": 4,
-      "passes": false,
-      "notes": "Use fastapi WebSocket. Run RLM in a thread since dspy.RLM.forward() is synchronous. Use a custom logging handler or monkey-patch to intercept iteration outputs and send them via WebSocket. Alternative: run RLM with verbose=True and capture logs, or post-process trajectory."
+      "passes": true,
+      "notes": "ws_handler.py created. WebSocket /ws/query streams iteration events then final result."
     },
     {
       "id": "US-005",

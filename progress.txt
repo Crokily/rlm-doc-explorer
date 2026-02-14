@@ -40,3 +40,15 @@
   - Token tracking uses lm.history - may need refinement when testing with real API
   - Import in main.py: `from rlm_pipeline import query_document` (relative, since uvicorn runs from backend/)
 ---
+
+## 2026-02-14 01:58 - US-004: WebSocket streaming endpoint
+- Created backend/ws_handler.py with handle_query_ws()
+- WebSocket at /ws/query: accepts {document_id, question}, streams iterations, sends result
+- Uses ThreadPoolExecutor to run sync RLM in async context
+- Trajectory replay with 0.1s delay for UI animation
+- **Learnings for future iterations:**
+  - WebSocket events: status, iteration, result, error
+  - Frontend should connect to ws://localhost:8000/ws/query
+  - Each iteration event has: {iteration, reasoning, code, output}
+  - Result event has: {answer, metrics: {tokens, time_s, iterations, depth, sub_llm_calls}}
+---
