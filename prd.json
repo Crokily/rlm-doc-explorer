@@ -1,0 +1,171 @@
+{
+  "project": "RLM-Doc-Explorer",
+  "branchName": "ralph/rlm-doc-explorer",
+  "description": "Web demo showcasing DSPy RLM for document Q&A with real-time iteration visualization, metrics, and multi-format document support",
+  "qualityChecks": {
+    "backend-syntax": "cd backend && ../venv/bin/python -m py_compile main.py",
+    "frontend-build": "cd frontend && npm run build"
+  },
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Project scaffolding and dependency setup",
+      "description": "As a developer, I need the project structure (Python venv + FastAPI backend + Next.js frontend) and all dependencies installed so downstream stories can build on a working foundation.",
+      "acceptanceCriteria": [
+        "Python venv at /home/ubuntu/rlm-doc-explorer/venv with dspy, fastapi, uvicorn, python-multipart, pypdf, python-docx, websockets installed",
+        "FastAPI app in backend/main.py with /health endpoint returning {\"status\": \"ok\"}",
+        "Next.js app in frontend/ directory configured to run on port 4321",
+        "Frontend displays 'RLM Document Explorer' heading on the index page",
+        ".env file at project root with GOOGLE_API_KEY=AIzaSyCf_65x1ntcG7r9k02suXu6Be9A3cbwpP4",
+        "start-backend.sh script that activates venv and runs uvicorn on port 8000",
+        "start-frontend.sh script that runs next dev on port 4321",
+        "Backend /health endpoint responds successfully when started"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "Use python3 -m venv venv. Frontend: npx create-next-app@latest frontend --ts --tailwind --app --no-eslint --no-src-dir --import-alias '@/*'. Backend CORS must allow origin http://localhost:4321."
+    },
+    {
+      "id": "US-002",
+      "title": "Document upload and text extraction API",
+      "description": "As a user, I want to upload PDF, DOCX, or TXT files and have them parsed to plain text so the RLM can process them.",
+      "acceptanceCriteria": [
+        "POST /api/upload accepts multipart file upload (field name: 'file')",
+        "Extracts text from PDF using pypdf, DOCX using python-docx, TXT using plain read",
+        "Returns JSON with id (uuid), filename, text_length, preview (first 500 chars)",
+        "Stores extracted text in-memory dict keyed by document ID",
+        "Returns 400 with error message for unsupported file types",
+        "Returns 400 for empty or unreadable files",
+        "GET /api/documents returns list of all uploaded documents (id, filename, text_length)",
+        "DELETE /api/documents/{id} removes a document",
+        "Backend syntax check passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "Use uuid4 for IDs. Store in a global dict: documents = {}. Each entry: {id, filename, text, text_length, preview}."
+    },
+    {
+      "id": "US-003",
+      "title": "DSPy RLM core query pipeline",
+      "description": "As a developer, I need the core DSPy RLM pipeline that takes document text and a question, returns answer with full trajectory and metrics.",
+      "acceptanceCriteria": [
+        "DocumentQA dspy.Signature with context (InputField), question (InputField) -> answer (OutputField)",
+        "RLM module uses dspy.LM('gemini/gemini-3-flash') configured from GOOGLE_API_KEY env var",
+        "query_document(doc_text, question) function returns dict with: answer, trajectory, elapsed_time_s, iteration_count, sub_llm_calls",
+        "Trajectory is a list of dicts each with: iteration, reasoning, code, output",
+        "Token counting extracted from dspy LM history after each call",
+        "Graceful error handling: returns error message instead of crashing on timeout or LLM failure",
+        "Backend syntax check passes"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": "Use dspy.configure(lm=dspy.LM('gemini/gemini-3-flash')). RLM with max_iterations=10, max_llm_calls=20, verbose=True. Parse trajectory from result.trajectory. Time with time.time()."
+    },
+    {
+      "id": "US-004",
+      "title": "WebSocket streaming endpoint for real-time iterations",
+      "description": "As a user, I want to see RLM iterations in real-time as they happen via WebSocket.",
+      "acceptanceCriteria": [
+        "WebSocket endpoint at /ws/query accepts connections",
+        "Client sends JSON: {document_id, question}",
+        "Server streams iteration events: {type: 'iteration', data: {iteration, reasoning, code, output}}",
+        "Server sends final event: {type: 'result', data: {answer, metrics: {tokens, time_s, iterations, depth, sub_llm_calls}}}",
+        "Server sends error event: {type: 'error', data: {message}} on failure",
+        "Returns error if document_id not found",
+        "Uses threading or async to not block the event loop",
+        "Backend syntax check passes"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": "Use fastapi WebSocket. Run RLM in a thread since dspy.RLM.forward() is synchronous. Use a custom logging handler or monkey-patch to intercept iteration outputs and send them via WebSocket. Alternative: run RLM with verbose=True and capture logs, or post-process trajectory."
+    },
+    {
+      "id": "US-005",
+      "title": "Frontend document upload UI",
+      "description": "As a user, I want a clean upload interface to add my documents with drag-and-drop support.",
+      "acceptanceCriteria": [
+        "Drag-and-drop zone with visual feedback (border highlight on drag over)",
+        "File picker button as alternative to drag-drop",
+        "Shows accepted formats: PDF, DOCX, TXT",
+        "Upload progress indicator (spinner or progress bar)",
+        "After upload: document card showing filename, text length, first line of preview",
+        "Document list showing all uploaded documents",
+        "Delete button on each document card that calls DELETE /api/documents/{id}",
+        "Error toast/message for unsupported formats or upload failures",
+        "Frontend build passes"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": "Use Tailwind CSS for styling. Fetch API for uploads. State management with React useState/useReducer."
+    },
+    {
+      "id": "US-006",
+      "title": "Frontend query interface and answer display",
+      "description": "As a user, I want to type questions about selected documents and see formatted answers.",
+      "acceptanceCriteria": [
+        "Document selector dropdown populated from GET /api/documents",
+        "Question text input with submit button",
+        "Answer displayed in a styled card below the input",
+        "Loading state: spinner + 'RLM is exploring your document...' message while processing",
+        "Query history: list of previous Q&A pairs for the session",
+        "Submit button disabled while a query is in progress",
+        "Frontend build passes"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": "Connect to WebSocket /ws/query on submit. Store answer from 'result' event. Store history in React state."
+    },
+    {
+      "id": "US-007",
+      "title": "RLM process sidebar with real-time iterations",
+      "description": "As a user, I want to watch the RLM's thinking process step-by-step in a sidebar panel.",
+      "acceptanceCriteria": [
+        "Right sidebar panel, collapsible via toggle button",
+        "Each iteration as an expandable card showing: iteration number, reasoning text, code block (monospace/highlighted), output text",
+        "New iterations appear as they arrive via WebSocket 'iteration' events",
+        "Auto-scroll to latest iteration",
+        "Idle state message when no query is running",
+        "Color coding: reasoning header blue, code block dark gray bg, output green, errors red",
+        "Frontend build passes"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": "Use WebSocket iteration events from US-004. Store iterations in React state array. Use useRef for auto-scroll. Tailwind for all styling."
+    },
+    {
+      "id": "US-008",
+      "title": "Metrics statistics panel",
+      "description": "As a user, I want to see performance metrics (tokens, time, iterations, depth, sub-LLM calls) after each query.",
+      "acceptanceCriteria": [
+        "Metrics bar/card displayed below the answer area",
+        "Shows: Total tokens, Response time (seconds), Number of iterations, Recursion depth (always 1 for this demo), Sub-LLM calls count",
+        "Metrics sourced from the WebSocket 'result' event metrics object",
+        "Each metric has an icon and label",
+        "Tooltip on hover explaining what each metric means",
+        "Metrics hidden when no query has been completed yet",
+        "Frontend build passes"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": "Use simple div grid with Tailwind. Icons can be emoji or simple SVG. Tooltips via title attribute or custom hover component."
+    },
+    {
+      "id": "US-009",
+      "title": "End-to-end integration, error handling, and polish",
+      "description": "As a developer, I need the full application working end-to-end with proper error handling and responsive layout.",
+      "acceptanceCriteria": [
+        "Full flow works: upload document -> select it -> ask question -> see iterations in sidebar -> get answer + metrics",
+        "Network error handling: toast/message when backend is down or WebSocket disconnects",
+        "CORS properly configured for frontend origin http://localhost:4321",
+        "Responsive layout: main content + sidebar work on 1200px+ screens, sidebar collapses on smaller",
+        "README.md with setup instructions and run commands",
+        "Both start scripts work correctly",
+        "Frontend build passes",
+        "Backend syntax check passes"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": "Final integration story. Fix any issues from previous stories. Ensure .env is loaded by backend. Test full WebSocket flow."
+    }
+  ]
+}

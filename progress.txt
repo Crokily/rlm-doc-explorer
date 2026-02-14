@@ -1,0 +1,8 @@
+## Codebase Patterns
+- Backend: FastAPI in backend/main.py, Python venv at ./venv
+- Frontend: Next.js + Tailwind in frontend/, port 4321
+- DSPy RLM: dspy.RLM with Gemini 3 Flash, depth=1
+- WebSocket for real-time iteration streaming
+- All styling via Tailwind CSS
+- GOOGLE_API_KEY in .env at project root
+---
