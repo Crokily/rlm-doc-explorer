@@ -8,17 +8,8 @@ from rlm_pipeline import query_document
 
 logger = logging.getLogger(__name__)
 executor = ThreadPoolExecutor(max_workers=2)
-ALLOWED_WS_ORIGINS: set[str] = {"http://localhost:4321", "ws://localhost:4321"}
-
-
 async def handle_query_ws(websocket: WebSocket, documents: dict[str, dict[str, Any]]) -> None:
     """Handle one WebSocket query session with trajectory replay streaming."""
-    origin = websocket.headers.get("origin")
-    if origin and origin not in ALLOWED_WS_ORIGINS:
-        logger.warning("Rejected WebSocket connection from origin: %s", origin)
-        await websocket.close(code=1008)
-        return
-
     await websocket.accept()
 
     try:

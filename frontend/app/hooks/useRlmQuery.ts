@@ -9,7 +9,11 @@ import {
   useState,
 } from "react";
 
-const RLM_QUERY_WS_URL = "ws://localhost:8000/ws/query";
+function getRlmWsUrl(): string {
+  if (typeof window === "undefined") return "ws://localhost:8000/ws/query";
+  const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+  return `${proto}//${window.location.hostname}:8000/ws/query`;
+}
 export const BACKEND_CONNECTION_ERROR =
   "Cannot connect to backend. Make sure the backend is running.";
 
@@ -183,7 +187,7 @@ export function useRlmQuery(): UseRlmQueryValue {
       setError(null);
       setStatusMessage("Connecting to RLM...");
 
-      const socket = new WebSocket(RLM_QUERY_WS_URL);
+      const socket = new WebSocket(getRlmWsUrl());
       socketRef.current = socket;
 
       let hasTerminalEvent = false;
