@@ -1,6 +1,7 @@
 "use client";
 
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { Brain, Code2, ScrollText } from "lucide-react";
 import { RlmQueryContext } from "../hooks/useRlmQuery";
 
 function cx(...classes: Array<string | false | null | undefined>): string {
@@ -211,8 +212,9 @@ export default function IterationSidebar() {
                   {isExpanded && (
                     <div className="space-y-3 border-t border-zinc-800 bg-zinc-950/65 p-3">
                       <section className="rounded-lg border border-sky-400/35 bg-sky-500/10">
-                        <div className="border-b border-sky-300/30 bg-sky-400/15 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-sky-200">
-                          💭 Reasoning
+                        <div className="flex items-center gap-1.5 border-b border-sky-300/30 bg-sky-400/15 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-sky-200">
+                          <Brain aria-hidden className="h-3.5 w-3.5" />
+                          <span>Reasoning</span>
                         </div>
                         <p className="whitespace-pre-wrap px-3 py-2 text-sm leading-6 text-zinc-100">
                           {iteration.reasoning || "No reasoning captured for this step."}
@@ -220,8 +222,9 @@ export default function IterationSidebar() {
                       </section>
 
                       <section className="rounded-lg border border-zinc-700 bg-zinc-900">
-                        <div className="border-b border-zinc-700 bg-zinc-800/80 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-zinc-200">
-                          💻 Code
+                        <div className="flex items-center gap-1.5 border-b border-zinc-700 bg-zinc-800/80 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-zinc-200">
+                          <Code2 aria-hidden className="h-3.5 w-3.5" />
+                          <span>Code</span>
                         </div>
                         <pre className="max-h-64 overflow-auto px-3 py-2 font-mono text-sm leading-6 text-zinc-100">
                           {iteration.code || "// No code generated in this iteration."}
@@ -238,13 +241,14 @@ export default function IterationSidebar() {
                       >
                         <div
                           className={cx(
-                            "border-b px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em]",
+                            "flex items-center gap-1.5 border-b px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em]",
                             hasError
                               ? "border-rose-400/35 bg-rose-500/15 text-rose-200"
                               : "border-emerald-300/30 bg-emerald-400/15 text-emerald-200",
                           )}
                         >
-                          📋 Output
+                          <ScrollText aria-hidden className="h-3.5 w-3.5" />
+                          <span>Output</span>
                         </div>
                         <pre
                           className={cx(

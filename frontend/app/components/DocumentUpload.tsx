@@ -16,6 +16,7 @@ import {
   type DocumentInfo,
   uploadDocument,
 } from "../lib/api";
+import { FileText, Loader2, Trash2 } from "lucide-react";
 
 interface DocumentUploadProps {
   onDocumentSelect: (docId: string) => void;
@@ -275,8 +276,8 @@ export default function DocumentUpload({ onDocumentSelect }: DocumentUploadProps
           }}
         />
         <div className="space-y-3">
-          <div className="text-3xl" aria-hidden>
-            📄
+          <div className="flex justify-center" aria-hidden>
+            <FileText className="h-8 w-8 text-zinc-300" />
           </div>
           {isUploading ? (
             <div className="flex items-center justify-center gap-2 text-sm text-zinc-200">
@@ -351,10 +352,14 @@ export default function DocumentUpload({ onDocumentSelect }: DocumentUploadProps
                         void handleDelete(event, doc.id);
                       }}
                       disabled={deletingDocId === doc.id}
-                      className="rounded-md border border-zinc-700 px-2 py-1 text-xs text-zinc-300 transition-colors hover:border-red-400 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex items-center justify-center rounded-md border border-zinc-700 px-2 py-1 text-xs text-zinc-300 transition-colors hover:border-red-400 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50"
                       aria-label={`Delete ${doc.filename}`}
                     >
-                      {deletingDocId === doc.id ? "..." : "×"}
+                      {deletingDocId === doc.id ? (
+                        <Loader2 aria-hidden className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 aria-hidden className="h-3.5 w-3.5" />
+                      )}
                     </button>
                   </div>
                   <p className="truncate text-xs text-zinc-400">

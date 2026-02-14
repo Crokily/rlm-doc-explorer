@@ -52,10 +52,10 @@ Navigate to http://localhost:4321
 
 ## Features
 
-- 📄 **Document Upload**: Drag-and-drop PDF, DOCX, or TXT files
-- 🔍 **RLM Query**: Ask questions about your documents
-- 👁️ **Process Visualization**: Watch RLM iterations in real-time (reasoning, code, output)
-- 📊 **Metrics**: Token usage, response time, iterations, depth, sub-LLM calls
+- **Document Upload**: Drag-and-drop PDF, DOCX, or TXT files
+- **RLM Query**: Ask questions about your documents
+- **Process Visualization**: Watch RLM iterations in real-time (reasoning, code, output)
+- **Metrics**: Token usage, response time, iterations, depth, sub-LLM calls
 
 ## How It Works
 

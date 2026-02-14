@@ -1,10 +1,18 @@
 "use client";
 
 import { useContext, useEffect, useState } from "react";
+import {
+  BarChart3,
+  Bot,
+  Clock3,
+  RefreshCcw,
+  Sigma,
+  type LucideIcon,
+} from "lucide-react";
 import { RlmQueryContext } from "../hooks/useRlmQuery";
 
 interface MetricDisplay {
-  icon: string;
+  icon: LucideIcon;
   label: string;
   value: number | string;
   tooltip: string;
@@ -36,31 +44,31 @@ export default function MetricsPanel() {
 
   const metrics: MetricDisplay[] = [
     {
-      icon: "🔤",
+      icon: Sigma,
       label: "Tokens",
       value: result.metrics.tokens.toLocaleString(),
       tooltip: "Total tokens consumed by the LLM during this query",
     },
     {
-      icon: "⏱️",
+      icon: Clock3,
       label: "Time",
       value: `${result.metrics.time_s.toFixed(1)}s`,
       tooltip: "Total wall-clock time for the RLM execution",
     },
     {
-      icon: "🔄",
+      icon: RefreshCcw,
       label: "Iterations",
       value: result.metrics.iterations,
       tooltip: "Number of REPL iterations the RLM performed",
     },
     {
-      icon: "📊",
+      icon: BarChart3,
       label: "Depth",
       value: result.metrics.depth,
       tooltip: "Recursion depth (1 = no recursive sub-calls)",
     },
     {
-      icon: "🤖",
+      icon: Bot,
       label: "Sub-LLM Calls",
       value: result.metrics.sub_llm_calls,
       tooltip: "Number of llm_query() calls made within the REPL",
@@ -78,23 +86,25 @@ export default function MetricsPanel() {
         Query Metrics
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
-        {metrics.map((metric) => (
-          <article
-            key={metric.label}
-            title={metric.tooltip}
-            className="min-w-[130px] flex-1 rounded-xl border border-zinc-700/50 bg-zinc-800/40 px-3 py-2"
-          >
-            <p className="text-xs font-medium text-zinc-400">
-              <span role="img" aria-label={metric.label}>
-                {metric.icon}
-              </span>{" "}
-              {metric.label}
-            </p>
-            <p className="mt-1 text-sm font-semibold text-zinc-100">
-              {metric.value}
-            </p>
-          </article>
-        ))}
+        {metrics.map((metric) => {
+          const Icon = metric.icon;
+
+          return (
+            <article
+              key={metric.label}
+              title={metric.tooltip}
+              className="min-w-[130px] flex-1 rounded-xl border border-zinc-700/50 bg-zinc-800/40 px-3 py-2"
+            >
+              <p className="flex items-center gap-1.5 text-xs font-medium text-zinc-400">
+                <Icon aria-hidden className="h-3.5 w-3.5" />
+                {metric.label}
+              </p>
+              <p className="mt-1 text-sm font-semibold text-zinc-100">
+                {metric.value}
+              </p>
+            </article>
+          );
+        })}
       </div>
     </section>
   );
