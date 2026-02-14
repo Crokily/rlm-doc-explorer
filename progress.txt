@@ -97,3 +97,13 @@
   - MetricsPanel reads from RlmQueryContext, hidden when no result
   - All inline metric chips removed from old answer card, now in dedicated panel
 ---
+
+## 2026-02-14 02:25 - US-009: End-to-end integration, error handling, and polish
+- Fixed CORS to allow both http and ws origins
+- Added network error handling in DocumentUpload and QueryInterface
+- Improved WebSocket error/close handling in useRlmQuery hook
+- Responsive 3-column layout (stacks on narrow screens)
+- Updated README.md with full setup instructions
+- Updated layout.tsx metadata (title + description)
+- **All 9 user stories completed successfully!**
+---
