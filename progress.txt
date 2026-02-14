@@ -75,3 +75,16 @@
   - Page passes selectedDocId + hook state to components
   - WebSocket opens per-query, closes when result received
 ---
+
+## 2026-02-14 02:15 - US-007: RLM process sidebar with real-time iterations
+- Created frontend/app/components/IterationSidebar.tsx
+- Collapsible right panel with expandable iteration cards
+- Color-coded sections: reasoning (blue), code (gray monospace), output (green), error (red)
+- Auto-scroll to latest iteration, idle/loading states
+- Updated page.tsx: moved RlmQueryContext.Provider to wrap full layout
+- Also updated useRlmQuery.ts to include statusMessage in the exported interface
+- **Learnings for future iterations:**
+  - IterationSidebar reads from RlmQueryContext (iterations, isLoading, statusMessage)
+  - Panel is lg:w-[400px], collapsible
+  - Latest iteration expanded by default
+---

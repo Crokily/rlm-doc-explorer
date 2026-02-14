@@ -129,8 +129,8 @@
         "Frontend build passes"
       ],
       "priority": 7,
-      "passes": false,
-      "notes": "Use WebSocket iteration events from US-004. Store iterations in React state array. Use useRef for auto-scroll. Tailwind for all styling."
+      "passes": true,
+      "notes": "IterationSidebar with collapsible panel, expandable iteration cards, color-coded sections, auto-scroll."
     },
     {
       "id": "US-008",
