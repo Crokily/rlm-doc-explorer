@@ -10,6 +10,8 @@ import {
 } from "react";
 
 const RLM_QUERY_WS_URL = "ws://localhost:8000/ws/query";
+export const BACKEND_CONNECTION_ERROR =
+  "Cannot connect to backend. Make sure the backend is running.";
 
 export interface RlmIteration {
   iteration: number;
@@ -185,6 +187,7 @@ export function useRlmQuery(): UseRlmQueryValue {
       socketRef.current = socket;
 
       let hasTerminalEvent = false;
+      let didOpen = false;
 
       const finishQuery = () => {
         if (hasTerminalEvent) {
@@ -211,6 +214,7 @@ export function useRlmQuery(): UseRlmQueryValue {
           return;
         }
 
+        didOpen = true;
         setStatusMessage("Connected. Sending query...");
 
         try {
@@ -277,28 +281,35 @@ export function useRlmQuery(): UseRlmQueryValue {
           return;
         }
 
-        setError("Unable to connect to the RLM query stream.");
-        setStatusMessage("Unable to connect to RLM.");
+        setError(BACKEND_CONNECTION_ERROR);
+        setStatusMessage("Cannot connect to backend.");
         finishQuery();
       };
 
       socket.onclose = () => {
-        if (socketRef.current !== socket) {
+        if (socketRef.current === socket) {
+          socketRef.current = null;
+        }
+
+        if (hasTerminalEvent) {
           return;
         }
 
-        socketRef.current = null;
+        hasTerminalEvent = true;
+        setIsLoading(false);
 
-        if (!hasTerminalEvent) {
-          hasTerminalEvent = true;
-          setIsLoading(false);
-          setError((current) => current ?? "Query connection closed unexpectedly.");
-          setStatusMessage((current) =>
-            current === "RLM process completed."
-              ? current
-              : "Query connection closed unexpectedly.",
-          );
+        if (!didOpen) {
+          setError(BACKEND_CONNECTION_ERROR);
+          setStatusMessage("Cannot connect to backend.");
+          return;
         }
+
+        setError((current) => current ?? "Query connection closed unexpectedly.");
+        setStatusMessage((current) =>
+          current === "RLM process completed."
+            ? current
+            : "Query connection closed unexpectedly.",
+        );
       };
     },
     [closeSocket],

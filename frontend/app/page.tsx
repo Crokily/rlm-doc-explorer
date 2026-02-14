@@ -23,12 +23,12 @@ export default function Home() {
       </header>
 
       <RlmQueryContext.Provider value={rlmQuery}>
-        <div className="flex min-h-[calc(100vh-81px)] flex-col lg:flex-row">
-          <aside className="w-full border-b border-zinc-800 p-4 lg:min-h-[calc(100vh-81px)] lg:w-96 lg:border-b-0 lg:border-r">
+        <div className="flex min-h-[calc(100vh-81px)] flex-col min-[1200px]:flex-row">
+          <aside className="w-full min-h-[320px] border-b border-zinc-800 p-4 min-[1200px]:min-h-[calc(100vh-81px)] min-[1200px]:w-96 min-[1200px]:shrink-0 min-[1200px]:border-b-0 min-[1200px]:border-r">
             <DocumentUpload onDocumentSelect={setSelectedDocId} />
           </aside>
 
-          <main className="flex-1 p-6">
+          <main className="flex-1 min-h-[420px] p-6 min-[1200px]:min-h-[calc(100vh-81px)]">
             <QueryInterface documentId={normalizedDocId} />
           </main>
 

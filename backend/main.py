@@ -8,11 +8,11 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from rlm_pipeline import query_document
-from ws_handler import handle_query_ws
 
 # Load environment variables from the project root (.env one level above /backend).
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+from rlm_pipeline import query_document
+from ws_handler import handle_query_ws
 
 app = FastAPI(title="RLM Document Explorer API")
 documents: dict[str, dict] = {}  # Global dict: id -> {id, filename, text, text_length, preview}
@@ -25,7 +25,7 @@ class QueryRequest(BaseModel):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4321"],
+    allow_origins=["http://localhost:4321", "ws://localhost:4321"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

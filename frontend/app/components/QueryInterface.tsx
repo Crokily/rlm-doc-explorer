@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { useRlmQueryContext } from "../hooks/useRlmQuery";
+import {
+  BACKEND_CONNECTION_ERROR,
+  useRlmQueryContext,
+} from "../hooks/useRlmQuery";
 import MetricsPanel from "./MetricsPanel";
 
 interface QueryInterfaceProps {
@@ -12,6 +15,18 @@ interface QueryHistoryItem {
   id: number;
   question: string;
   answer: string;
+}
+
+function normalizeErrorMessage(error: string): string {
+  const normalized = error.toLowerCase();
+  if (
+    normalized.includes("cannot connect to backend") ||
+    normalized.includes("unable to connect")
+  ) {
+    return BACKEND_CONNECTION_ERROR;
+  }
+
+  return error;
 }
 
 export default function QueryInterface({ documentId }: QueryInterfaceProps) {
@@ -123,7 +138,7 @@ export default function QueryInterface({ documentId }: QueryInterfaceProps) {
 
       {error && (
         <div className="rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">
-          {error}
+          {normalizeErrorMessage(error)}
         </div>
       )}
 

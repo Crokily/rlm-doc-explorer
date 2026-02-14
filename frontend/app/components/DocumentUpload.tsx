@@ -23,10 +23,26 @@ interface DocumentUploadProps {
 
 const ACCEPTED_EXTENSIONS = [".pdf", ".docx", ".doc", ".txt"];
 const ACCEPTED_TYPES = ACCEPTED_EXTENSIONS.join(",");
+const BACKEND_OFFLINE_MESSAGE =
+  "Backend is not running. Start the backend on port 8000.";
 
 function isSupportedFile(file: File): boolean {
   const lowerName = file.name.toLowerCase();
   return ACCEPTED_EXTENSIONS.some((ext) => lowerName.endsWith(ext));
+}
+
+function isNetworkFailure(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+  return (
+    error instanceof TypeError ||
+    message.includes("failed to fetch") ||
+    message.includes("networkerror") ||
+    message.includes("network request failed")
+  );
 }
 
 function getPreviewLine(preview?: string): string {
@@ -98,7 +114,11 @@ export default function DocumentUpload({ onDocumentSelect }: DocumentUploadProps
         }
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "Unable to load documents right now.",
+          isNetworkFailure(err)
+            ? BACKEND_OFFLINE_MESSAGE
+            : err instanceof Error
+              ? err.message
+              : "Unable to load documents right now.",
         );
       } finally {
         setIsLoadingDocuments(false);
@@ -140,7 +160,13 @@ export default function DocumentUpload({ onDocumentSelect }: DocumentUploadProps
         await refreshDocuments(previewOverrides);
         selectDocument(uploadedDoc.id);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Upload failed.");
+        setError(
+          isNetworkFailure(err)
+            ? BACKEND_OFFLINE_MESSAGE
+            : err instanceof Error
+              ? err.message
+              : "Upload failed.",
+        );
       } finally {
         setIsUploading(false);
       }
@@ -210,7 +236,13 @@ export default function DocumentUpload({ onDocumentSelect }: DocumentUploadProps
       await deleteDocument(docId);
       await refreshDocuments();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Delete failed.");
+      setError(
+        isNetworkFailure(err)
+          ? BACKEND_OFFLINE_MESSAGE
+          : err instanceof Error
+            ? err.message
+            : "Delete failed.",
+      );
     } finally {
       setDeletingDocId(null);
     }

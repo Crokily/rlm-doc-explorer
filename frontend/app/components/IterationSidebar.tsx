@@ -92,8 +92,8 @@ export default function IterationSidebar() {
   return (
     <aside
       className={cx(
-        "w-full border-t border-zinc-800 bg-zinc-950/80 backdrop-blur-lg transition-all duration-300 lg:min-h-[calc(100vh-81px)] lg:border-t-0 lg:border-l",
-        isOpen ? "lg:w-[400px]" : "lg:w-16",
+        "w-full min-h-[280px] border-t border-zinc-800 bg-zinc-950/80 backdrop-blur-lg transition-all duration-300 min-[1200px]:min-h-[calc(100vh-81px)] min-[1200px]:border-t-0 min-[1200px]:border-l",
+        isOpen ? "min-[1200px]:w-[400px]" : "min-[1200px]:w-16",
       )}
     >
       <div className="flex h-full flex-col">
