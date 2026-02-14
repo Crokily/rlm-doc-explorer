@@ -7,6 +7,8 @@ import pypdf
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from rlm_pipeline import query_document
 
 # Load environment variables from the project root (.env one level above /backend).
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
@@ -14,6 +16,11 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 app = FastAPI(title="RLM Document Explorer API")
 documents: dict[str, dict] = {}  # Global dict: id -> {id, filename, text, text_length, preview}
 SUPPORTED_EXTENSIONS: set[str] = {".pdf", ".docx", ".doc", ".txt"}
+
+
+class QueryRequest(BaseModel):
+    document_id: str
+    question: str
 
 app.add_middleware(
     CORSMiddleware,
@@ -129,3 +136,18 @@ def get_document(doc_id: str) -> dict[str, str | int]:
         "text_length": document["text_length"],
         "preview": document["preview"],
     }
+
+
+@app.post("/api/query")
+def query_document_endpoint(request: QueryRequest) -> dict:
+    if not request.question.strip():
+        raise HTTPException(status_code=400, detail="Question cannot be empty.")
+
+    document = documents.get(request.document_id)
+    if document is None:
+        raise HTTPException(status_code=404, detail="Document not found.")
+
+    try:
+        return query_document(str(document.get("text", "")), request.question)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Query failed: {exc}") from exc
