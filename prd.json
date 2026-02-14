@@ -58,8 +58,8 @@
         "Backend syntax check passes"
       ],
       "priority": 3,
-      "passes": false,
-      "notes": "Use dspy.configure(lm=dspy.LM('gemini/gemini-3-flash')). RLM with max_iterations=10, max_llm_calls=20, verbose=True. Parse trajectory from result.trajectory. Time with time.time()."
+      "passes": true,
+      "notes": "rlm_pipeline.py created with DocumentQA signature, configure_dspy(), query_document(). POST /api/query endpoint added."
     },
     {
       "id": "US-004",

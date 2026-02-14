@@ -29,3 +29,14 @@
   - Upload field name is 'file'
   - File type detection by extension
 ---
+
+## 2026-02-14 01:55 - US-003: DSPy RLM core query pipeline
+- Created backend/rlm_pipeline.py with DocumentQA signature, configure_dspy(), query_document()
+- Added POST /api/query endpoint to main.py
+- Token tracking via LM history, sub-LLM call counting from trajectory
+- **Learnings for future iterations:**
+  - dspy.RLM returns Prediction with .trajectory (list of dicts) and .answer
+  - configure_dspy() must be called before creating RLM instance
+  - Token tracking uses lm.history - may need refinement when testing with real API
+  - Import in main.py: `from rlm_pipeline import query_document` (relative, since uvicorn runs from backend/)
+---
