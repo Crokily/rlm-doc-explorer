@@ -1,4 +1,5 @@
 import io
+import os
 import uuid
 from pathlib import Path
 
@@ -23,10 +24,25 @@ class QueryRequest(BaseModel):
     document_id: str
     question: str
 
+
+def get_allowed_origins() -> list[str]:
+    configured = os.environ.get("CORS_ALLOWED_ORIGINS", "").strip()
+    if configured:
+        return [origin.strip() for origin in configured.split(",") if origin.strip()]
+
+    return [
+        "http://localhost:4321",
+        "http://127.0.0.1:4321",
+        "https://rlm.a2a.ing",
+        "https://rlm-doc-explorer-frontend.vercel.app",
+    ]
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=get_allowed_origins(),
+    allow_origin_regex=os.environ.get("CORS_ALLOWED_ORIGIN_REGEX", r"https://.*\.vercel\.app"),
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
