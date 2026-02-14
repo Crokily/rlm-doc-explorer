@@ -146,8 +146,8 @@
         "Frontend build passes"
       ],
       "priority": 8,
-      "passes": false,
-      "notes": "Use simple div grid with Tailwind. Icons can be emoji or simple SVG. Tooltips via title attribute or custom hover component."
+      "passes": true,
+      "notes": "MetricsPanel component with 5 metric cards. Rendered below answer in QueryInterface."
     },
     {
       "id": "US-009",

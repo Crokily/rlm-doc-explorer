@@ -88,3 +88,12 @@
   - Panel is lg:w-[400px], collapsible
   - Latest iteration expanded by default
 ---
+
+## 2026-02-14 02:20 - US-008: Metrics statistics panel
+- Created frontend/app/components/MetricsPanel.tsx with 5 metric mini-cards
+- Metrics: Tokens, Time, Iterations, Depth, Sub-LLM Calls - with emojis and tooltips
+- Updated QueryInterface.tsx to render MetricsPanel between answer and history
+- **Learnings for future iterations:**
+  - MetricsPanel reads from RlmQueryContext, hidden when no result
+  - All inline metric chips removed from old answer card, now in dedicated panel
+---
