@@ -78,7 +78,12 @@ type RlmWsEvent =
   | { type: "error"; data: RlmError };
 
 export interface UseRlmQueryValue {
-  submitQuery: (documentId: string, question: string) => void;
+  submitQuery: (
+    documentId: string,
+    question: string,
+    apiKey: string,
+    model: string,
+  ) => void;
   isLoading: boolean;
   iterations: RlmIteration[];
   result: RlmResult | null;
@@ -198,11 +203,26 @@ export function useRlmQuery(): UseRlmQueryValue {
   }, [closeSocket]);
 
   const submitQuery = useCallback(
-    (documentId: string, question: string) => {
+    (documentId: string, question: string, apiKey: string, model: string) => {
       const trimmedQuestion = question.trim();
+      const trimmedApiKey = apiKey.trim();
+      const trimmedModel = model.trim();
+
       if (!documentId || trimmedQuestion.length === 0) {
         setError("Please select a document and enter a question.");
         setStatusMessage("Waiting for a valid question.");
+        return;
+      }
+      if (!trimmedApiKey) {
+        setError(
+          "API key is required. Please configure your API key in Settings.",
+        );
+        setStatusMessage("API key required.");
+        return;
+      }
+      if (!trimmedModel) {
+        setError("Model is required. Please select a model in Settings.");
+        setStatusMessage("Model required.");
         return;
       }
 
@@ -252,6 +272,8 @@ export function useRlmQuery(): UseRlmQueryValue {
             JSON.stringify({
               document_id: documentId,
               question: trimmedQuestion,
+              api_key: trimmedApiKey,
+              model: trimmedModel,
             }),
           );
           setStatusMessage("RLM is processing your query...");

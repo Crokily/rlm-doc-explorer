@@ -5,24 +5,59 @@ from pathlib import Path
 
 import docx
 import pypdf
-from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-# Load environment variables from the project root (.env one level above /backend).
-load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 from rlm_pipeline import query_document
 from ws_handler import handle_query_ws
 
 app = FastAPI(title="RLM Document Explorer API")
 documents: dict[str, dict] = {}  # Global dict: id -> {id, filename, text, text_length, preview}
 SUPPORTED_EXTENSIONS: set[str] = {".pdf", ".docx", ".doc", ".txt"}
+PROVIDER_MODELS: dict[str, dict] = {
+    "gemini": {
+        "label": "Google Gemini",
+        "api_key_name": "Google API Key",
+        "models": [
+            {"id": "gemini/gemini-3-flash-preview", "name": "Gemini 3 Flash (Preview)"},
+            {"id": "gemini/gemini-3-pro-preview", "name": "Gemini 3 Pro (Preview)"},
+        ],
+        "default": "gemini/gemini-3-flash-preview",
+    },
+    "openai": {
+        "label": "OpenAI",
+        "api_key_name": "OpenAI API Key",
+        "models": [
+            {"id": "gpt-5.2-codex", "name": "GPT-5.2 Codex"},
+            {"id": "gpt-5.2", "name": "GPT-5.2"},
+            {"id": "gpt-5.1", "name": "GPT-5.1"},
+            {"id": "gpt-5.1-codex", "name": "GPT-5.1 Codex"},
+            {"id": "gpt-5.1-codex-mini", "name": "GPT-5.1 Codex Mini"},
+            {"id": "gpt-5", "name": "GPT-5"},
+            {"id": "gpt-5-mini", "name": "GPT-5 Mini"},
+            {"id": "gpt-5-nano", "name": "GPT-5 Nano"},
+        ],
+        "default": "gpt-5.2-codex",
+    },
+    "anthropic": {
+        "label": "Anthropic",
+        "api_key_name": "Anthropic API Key",
+        "models": [
+            {"id": "claude-sonnet-4-5", "name": "Claude Sonnet 4.5"},
+            {"id": "claude-opus-4-6", "name": "Claude Opus 4.6"},
+            {"id": "claude-haiku-4-5", "name": "Claude Haiku 4.5"},
+        ],
+        "default": "claude-sonnet-4-5",
+    },
+}
 
 
 class QueryRequest(BaseModel):
     document_id: str
     question: str
+    api_key: str
+    model: str
 
 
 def get_allowed_origins() -> list[str]:
@@ -51,6 +86,11 @@ app.add_middleware(
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/api/providers")
+def list_providers() -> dict[str, dict]:
+    return PROVIDER_MODELS
 
 
 def extract_text_from_pdf(file_bytes: bytes) -> str:
@@ -159,13 +199,28 @@ def get_document(doc_id: str) -> dict[str, str | int]:
 def query_document_endpoint(request: QueryRequest) -> dict:
     if not request.question.strip():
         raise HTTPException(status_code=400, detail="Question cannot be empty.")
+    if not request.api_key.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="API key is required. Please configure your API key in Settings.",
+        )
+    if not request.model.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Model is required. Please select a model in Settings.",
+        )
 
     document = documents.get(request.document_id)
     if document is None:
         raise HTTPException(status_code=404, detail="Document not found.")
 
     try:
-        return query_document(str(document.get("text", "")), request.question)
+        return query_document(
+            str(document.get("text", "")),
+            request.question,
+            request.model,
+            request.api_key,
+        )
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Query failed: {exc}") from exc
 

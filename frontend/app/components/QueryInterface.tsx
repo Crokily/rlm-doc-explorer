@@ -5,6 +5,7 @@ import {
   BACKEND_CONNECTION_ERROR,
   useRlmQueryContext,
 } from "../hooks/useRlmQuery";
+import { useApiKeySettings } from "./ApiKeySettings";
 import MetricsPanel from "./MetricsPanel";
 
 interface QueryInterfaceProps {
@@ -32,6 +33,8 @@ function normalizeErrorMessage(error: string): string {
 export default function QueryInterface({ documentId }: QueryInterfaceProps) {
   const { submitQuery, isLoading, iterations, result, error, resetQuery } =
     useRlmQueryContext();
+  const { settings, hasApiKey, isLoadingProviders, providersError } =
+    useApiKeySettings();
 
   const [question, setQuestion] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState<string | null>(null);
@@ -40,8 +43,15 @@ export default function QueryInterface({ documentId }: QueryInterfaceProps) {
   const historyIdRef = useRef(0);
   const previousDocumentIdRef = useRef<string | null>(documentId);
 
+  const hasModel = settings.model.trim().length > 0;
+  const isSettingsReady = !isLoadingProviders && !providersError;
   const isSubmitDisabled =
-    !documentId || question.trim().length === 0 || isLoading;
+    !documentId ||
+    question.trim().length === 0 ||
+    isLoading ||
+    !isSettingsReady ||
+    !hasApiKey ||
+    !hasModel;
 
   useEffect(() => {
     if (previousDocumentIdRef.current === documentId) {
@@ -77,7 +87,7 @@ export default function QueryInterface({ documentId }: QueryInterfaceProps) {
 
     resetQuery();
     setCurrentQuestion(trimmedQuestion);
-    submitQuery(documentId, trimmedQuestion);
+    submitQuery(documentId, trimmedQuestion, settings.apiKey, settings.model);
     setQuestion("");
   };
 
@@ -118,6 +128,26 @@ export default function QueryInterface({ documentId }: QueryInterfaceProps) {
         {!documentId && (
           <p className="mt-2 text-xs text-zinc-500">
             Select a document to enable querying.
+          </p>
+        )}
+        {isLoadingProviders && (
+          <p className="mt-2 text-xs text-zinc-500">
+            Loading provider settings from backend...
+          </p>
+        )}
+        {providersError && (
+          <p className="mt-2 text-xs text-rose-300">
+            Could not load provider settings. Check backend connectivity.
+          </p>
+        )}
+        {!isLoadingProviders && !providersError && !hasApiKey && (
+          <p className="mt-2 text-xs text-amber-300">
+            Add your API key in Settings to enable document queries.
+          </p>
+        )}
+        {!isLoadingProviders && !providersError && hasApiKey && !hasModel && (
+          <p className="mt-2 text-xs text-amber-300">
+            Select a model in Settings to enable document queries.
           </p>
         )}
       </form>

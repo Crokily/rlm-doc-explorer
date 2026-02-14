@@ -8,6 +8,8 @@ from rlm_pipeline import query_document
 
 logger = logging.getLogger(__name__)
 executor = ThreadPoolExecutor(max_workers=2)
+
+
 async def handle_query_ws(websocket: WebSocket, documents: dict[str, dict[str, Any]]) -> None:
     """Handle one WebSocket query session with trajectory replay streaming."""
     await websocket.accept()
@@ -16,12 +18,36 @@ async def handle_query_ws(websocket: WebSocket, documents: dict[str, dict[str, A
         data = await websocket.receive_json()
         document_id = str(data.get("document_id", "")).strip()
         question = str(data.get("question", "")).strip()
+        api_key = str(data.get("api_key", "")).strip()
+        model = str(data.get("model", "")).strip()
 
         if not document_id or not question:
             await websocket.send_json(
                 {
                     "type": "error",
                     "data": {"message": "Both document_id and question are required"},
+                }
+            )
+            return
+        if not api_key:
+            await websocket.send_json(
+                {
+                    "type": "error",
+                    "data": {
+                        "message": (
+                            "API key is required. Please configure your API key in Settings."
+                        )
+                    },
+                }
+            )
+            return
+        if not model:
+            await websocket.send_json(
+                {
+                    "type": "error",
+                    "data": {
+                        "message": "Model is required. Please select a model in Settings."
+                    },
                 }
             )
             return
@@ -43,6 +69,8 @@ async def handle_query_ws(websocket: WebSocket, documents: dict[str, dict[str, A
             query_document,
             str(document.get("text", "")),
             question,
+            model,
+            api_key,
         )
 
         trajectory = result.get("trajectory", []) or []

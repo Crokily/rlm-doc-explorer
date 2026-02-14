@@ -1,23 +1,12 @@
-import json
 import logging
 import os
 import shutil
 import time
 from pathlib import Path
-from urllib.parse import urlencode
-from urllib.request import urlopen
 
 import dspy
 
 logger = logging.getLogger(__name__)
-
-DEFAULT_GEMINI_MODEL = "gemini-3-flash-preview"
-GEMINI_MODEL_FALLBACKS = (
-    "gemini-2.5-flash",
-    "gemini-flash-latest",
-)
-GOOGLE_LIST_MODELS_URL = "https://generativelanguage.googleapis.com/v1beta/models"
-_resolved_model_name: str | None = None
 
 
 class DocumentQA(dspy.Signature):
@@ -28,83 +17,6 @@ class DocumentQA(dspy.Signature):
     question: str = dspy.InputField(desc="The user's question about the document")
     answer: str = dspy.OutputField(
         desc="A detailed, accurate answer based on the document content"
-    )
-
-
-def _normalize_model_name(model_name: str) -> str:
-    normalized = model_name.strip()
-    if not normalized:
-        return ""
-    if normalized.startswith("gemini/"):
-        return normalized
-    if normalized.startswith("models/"):
-        normalized = normalized[len("models/") :]
-    return f"gemini/{normalized}"
-
-
-def _list_generate_content_models(api_key: str) -> set[str]:
-    query = urlencode({"key": api_key})
-    with urlopen(f"{GOOGLE_LIST_MODELS_URL}?{query}", timeout=15) as response:
-        payload = json.loads(response.read().decode("utf-8"))
-
-    models: set[str] = set()
-    for model in payload.get("models", []) or []:
-        if not isinstance(model, dict):
-            continue
-
-        methods = model.get("supportedGenerationMethods", []) or []
-        if "generateContent" not in methods:
-            continue
-
-        name = model.get("name", "")
-        if isinstance(name, str) and name.startswith("models/"):
-            name = name[len("models/") :]
-
-        if isinstance(name, str) and name:
-            models.add(name)
-
-    return models
-
-
-def _resolve_gemini_model(api_key: str) -> str:
-    global _resolved_model_name
-    if _resolved_model_name:
-        return _resolved_model_name
-
-    configured = _normalize_model_name(
-        os.environ.get("GEMINI_MODEL", DEFAULT_GEMINI_MODEL)
-    )
-
-    candidates: list[str] = []
-    for candidate in (
-        configured,
-        _normalize_model_name(DEFAULT_GEMINI_MODEL),
-        *(_normalize_model_name(model) for model in GEMINI_MODEL_FALLBACKS),
-    ):
-        if candidate and candidate not in candidates:
-            candidates.append(candidate)
-
-    try:
-        available = _list_generate_content_models(api_key)
-    except Exception:
-        logger.exception(
-            "Failed to list Gemini models via ListModels. Falling back to %s",
-            candidates[0],
-        )
-        _resolved_model_name = candidates[0]
-        return _resolved_model_name
-
-    for candidate in candidates:
-        candidate_without_provider = candidate.split("/", 1)[1]
-        if candidate_without_provider in available:
-            _resolved_model_name = candidate
-            logger.info("Using Gemini model: %s", _resolved_model_name)
-            return _resolved_model_name
-
-    tried = ", ".join(candidates)
-    raise ValueError(
-        "No compatible Gemini model found for generateContent. "
-        f"Tried: {tried}. Set GEMINI_MODEL to an available model name."
     )
 
 
@@ -132,17 +44,20 @@ def _ensure_deno_available() -> None:
     )
 
 
-def configure_dspy():
-    """Configure DSPy with a valid Gemini model name."""
-    api_key = os.environ.get("GOOGLE_API_KEY", "")
-    if not api_key:
-        raise ValueError("GOOGLE_API_KEY not set")
+def configure_dspy(model: str, api_key: str) -> dspy.LM:
+    """Configure DSPy using a user-selected model and API key."""
+    normalized_model = model.strip()
+    normalized_api_key = api_key.strip()
 
-    model_name = _resolve_gemini_model(api_key)
-    return dspy.LM(model_name, api_key=api_key)
+    if not normalized_model:
+        raise ValueError("Model is required")
+    if not normalized_api_key:
+        raise ValueError("API key is required")
+
+    return dspy.LM(normalized_model, api_key=normalized_api_key)
 
 
-def query_document(doc_text: str, question: str) -> dict:
+def query_document(doc_text: str, question: str, model: str, api_key: str) -> dict:
     """
     Run dspy.RLM to answer a question about a document.
 
@@ -155,7 +70,7 @@ def query_document(doc_text: str, question: str) -> dict:
     - total_tokens: int (estimated)
     """
     _ensure_deno_available()
-    lm = configure_dspy()
+    lm = configure_dspy(model, api_key)
 
     rlm = dspy.RLM(
         DocumentQA,
