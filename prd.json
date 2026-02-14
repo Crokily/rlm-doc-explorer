@@ -41,8 +41,8 @@
         "Backend syntax check passes"
       ],
       "priority": 2,
-      "passes": false,
-      "notes": "Use uuid4 for IDs. Store in a global dict: documents = {}. Each entry: {id, filename, text, text_length, preview}."
+      "passes": true,
+      "notes": "All endpoints working: upload, list, get, delete. PDF/DOCX/TXT extraction verified."
     },
     {
       "id": "US-003",

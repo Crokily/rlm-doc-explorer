@@ -19,3 +19,13 @@
   - Frontend build: `cd frontend && npm run build`
   - Backend check: `venv/bin/python -m py_compile backend/main.py`
 ---
+
+## 2026-02-14 01:55 - US-002: Document upload and text extraction API
+- Added POST /api/upload with PDF/DOCX/TXT extraction
+- Added GET /api/documents, GET /api/documents/{id}, DELETE /api/documents/{id}
+- In-memory storage with uuid4 keys
+- **Learnings for future iterations:**
+  - documents dict stores full text but list endpoint only returns id/filename/text_length
+  - Upload field name is 'file'
+  - File type detection by extension
+---
