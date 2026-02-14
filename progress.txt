@@ -52,3 +52,15 @@
   - Each iteration event has: {iteration, reasoning, code, output}
   - Result event has: {answer, metrics: {tokens, time_s, iterations, depth, sub_llm_calls}}
 ---
+
+## 2026-02-14 02:02 - US-005: Frontend document upload UI
+- Created frontend/app/components/DocumentUpload.tsx with drag-drop, file list, selection, delete
+- Created frontend/app/lib/api.ts with uploadDocument, listDocuments, deleteDocument helpers
+- Updated page.tsx to two-panel layout with header + sidebar + main area
+- **Learnings for future iterations:**
+  - API base: http://localhost:8000
+  - DocumentInfo interface: {id, filename, text_length, preview?}
+  - Components use "use client" directive
+  - onDocumentSelect callback pattern for cross-component communication
+  - All styling via Tailwind, dark zinc theme
+---

@@ -95,8 +95,8 @@
         "Frontend build passes"
       ],
       "priority": 5,
-      "passes": false,
-      "notes": "Use Tailwind CSS for styling. Fetch API for uploads. State management with React useState/useReducer."
+      "passes": true,
+      "notes": "DocumentUpload component with drag-drop, file list, delete. api.ts helper. page.tsx layout."
     },
     {
       "id": "US-006",
