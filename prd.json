@@ -22,8 +22,8 @@
         "Backend /health endpoint responds successfully when started"
       ],
       "priority": 1,
-      "passes": false,
-      "notes": "Use python3 -m venv venv. Frontend: npx create-next-app@latest frontend --ts --tailwind --app --no-eslint --no-src-dir --import-alias '@/*'. Backend CORS must allow origin http://localhost:4321."
+      "passes": true,
+      "notes": "Completed. venv, backend, frontend, .env, start scripts all working."
     },
     {
       "id": "US-002",

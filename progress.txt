@@ -6,3 +6,16 @@
 - All styling via Tailwind CSS
 - GOOGLE_API_KEY in .env at project root
 ---
+
+## 2026-02-14 01:50 - US-001: Project scaffolding and dependency setup
+- Created Python venv with dspy, fastapi, uvicorn, pypdf, python-docx, websockets, python-dotenv
+- Created FastAPI backend at backend/main.py with /health endpoint and CORS for localhost:4321
+- Created Next.js + Tailwind frontend at frontend/ configured for port 4321
+- Created .env with GOOGLE_API_KEY, start scripts, .gitignore
+- **Learnings for future iterations:**
+  - Backend loads .env from parent dir via python-dotenv
+  - Frontend runs on port 4321, backend on 8000
+  - Use venv/bin/python for all Python commands
+  - Frontend build: `cd frontend && npm run build`
+  - Backend check: `venv/bin/python -m py_compile backend/main.py`
+---
