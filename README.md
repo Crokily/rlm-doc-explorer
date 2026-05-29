@@ -1,5 +1,7 @@
 # RLM Document Explorer
 
+> 🚀 Try it online: [rlm.a2a.ing](https://rlm.a2a.ing) — BYOK (Bring Your Own Key) supported, so you can enter your own API key and start exploring right away.
+
 A web demo showcasing DSPy's Recursive Language Model (RLM) for document question-answering.
 Upload documents (PDF, DOCX, TXT), ask questions, and watch the RLM iteratively explore your documents through code execution and sub-LLM calls.
 
